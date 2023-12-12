@@ -1,0 +1,64 @@
+---
+title: "Untitled"
+author: "ME"
+date: "3/27/2022"
+output: pdf_document
+---
+
+```{r}
+library(tseries)
+library(zoo)
+library(TSA)
+library(forecast)
+```
+
+```{r}
+data<-read.csv('C:\\Users\\HP\\Documents\\TS project\\NFLX.csv')
+head(data)
+```
+```{r}
+data$Date<-as.Date(data$Date,format = '%Y-%m-%d')
+head(date)
+```
+```{r}
+data_mean<-aggregate(data$Adj.Close, list(data$Date), mean)
+data_mean
+```
+```{r}
+netflix<-read.zoo(data_mean, format='%Y-%m-%d')
+```
+
+```{r}
+modelfit<-auto.arima(coredata(diff(log(netflix)),lag=1),lambda = 'auto')
+summary(modelfit)
+```
+```{r}
+acf(coredata(netflix))
+```
+```{r}
+pacf(coredata(netflix))
+```
+```{r}
+plot(diff(log(netflix)))
+```
+```{r}
+acf(coredata(diff(log(netflix))))
+```
+```{r}
+plot(resid(modelfit))
+```
+```{r}
+hist(resid(modelfit),freq = F)
+e=resid(modelfit)
+curve(dnorm(x, mean=mean(e), sd=sd(e)), add=TRUE, col="darkred")
+```
+```{r}
+tsdiag(modelfit)
+```
+```{r}
+Box.test(modelfit$residuals, lag=10, type="Ljung-Box")
+```
+```{r}
+
+plot(forecast(modelfit,h=30))
+```

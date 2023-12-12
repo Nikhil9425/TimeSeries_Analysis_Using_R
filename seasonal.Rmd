@@ -1,0 +1,94 @@
+---
+title: "Untitled"
+author: "ME"
+date: "5/2/2022"
+output: pdf_document
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(TSA)
+library(tseries)
+labor<-read.csv('C:\\Users\\HP\\Downloads\\LNU01300000 (1).csv')
+head(labor)
+```
+
+```{r}
+labor_data=ts(data=labor$LNU01300000,frequency = 12,start = c(1992,1),end = c(2009,12))
+labor$DATE<-as.Date(labor$DATE)
+```
+
+```{r}
+plot.ts(labor_data,type='l',col='blue')
+```
+
+```{r}
+plot(window(labor_data,start=c(2004,1)),ylab='Rate(percent)')
+Month=c('J','F','M','A','M','J','J','A','S','O','N','D')
+points(window(labor_data,start=c(2004,1)),pch=Month)
+```
+```{r}
+ggplot(data=labor,aes(x=DATE,y=LNU01300000))+geom_line()+xlab('Date')+ylab('Labor Force Participation Rate(percent)')
+```
+
+```{r}
+acf(as.vector(labor_data),lag.max =36)
+```
+
+```{r}
+plot(diff(labor_data),ylab='First Difference of Rate',xlab='Time')
+```
+
+
+```{r}
+acf(as.vector(diff(labor_data)),lag.max=36)
+```
+
+```{r}
+plot(diff(diff(labor_data),lag = 12),xlab='Time',ylab='First and Seasonal Difference of Rate')
+```
+
+```{r}
+acf(as.vector(diff(diff(labor_data),lag=12)),lag.max = 36)
+```
+```{r}
+pacf(as.vector(diff(diff(labor_data),lag=12)),lag.max = 36)
+```
+
+```{r}
+arima.labor=arima(labor_data,order=c(1,1,1),seasonal=list(order=c(2,1,2),period=12))
+arima.labor
+```
+```{r}
+adf.test(diff(diff(labor_data),lag = 12))
+```
+
+
+```{r}
+plot(window(rstandard(arima.labor),start=c(1992,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+```
+
+```{r}
+acf(as.vector(window(rstandard(arima.labor),start=c(1992,1))),lag.max=36)
+```
+```{r}
+tsdiag(arima.labor)
+```
+
+```{r}
+hist(rstandard(arima.labor),xlab='Standardized Residuals')
+```
+
+```{r}
+qqnorm(rstandard(arima.labor))
+qqline(rstandard(arima.labor))
+```
+```{r}
+shapiro.test(residuals(arima.labor))
+```
+
+```{r}
+plot(arima.labor,n1=c(2009,1),n.ahead=36,col = 'red',ylab='Labor Force Participation Rate (percent)')
+```

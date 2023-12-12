@@ -1,0 +1,95 @@
+---
+title: "Untitled"
+author: "ME"
+date: "3/16/2022"
+output: pdf_document
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(TSA)
+labordata<-read.csv('C:\\Users\\HP\\Documents\\TS project\\CIVPART.csv',header=TRUE,stringsAsFactors = FALSE)
+head(labordata)
+```
+
+```{r}
+labor=ts(data=labordata$CIVPART,frequency = 12,start = c(2010,1),end = c(2019,12))
+class(labor)
+```
+```{r}
+head(labor)
+```
+```{r}
+plot.ts(labor,type='l',col='blue',ylab='Percentage of Labor Participation')
+```
+```{r}
+labordata$DATE<-as.Date(labordata$DATE)
+```
+```{r}
+
+ggplot(data=labordata,aes(x=DATE,y=CIVPART))+geom_line()
+```
+```{r}
+ggplot(data=labordata,aes(x=DATE,y=CIVPART))+geom_line()+scale_x_date(limits = as.Date(c("2010-01-01","2015-01-01")),expand = c(0,0))+theme(aspect.ratio = 0.6)
+```
+```{r}
+labor_comp<-decompose(labor)
+labor_comp$seasonal
+```
+```{r}
+plot(labor_comp)
+```
+```{r}
+plot(window(labor,start=c(2010,1)),ylab='PERCENT')
+Month=c('J','F','M','A','M','J','J','A','S','O','N','D')
+points(window(labor,start=c(2010,1)),pch=Month)
+```
+
+```{r}
+acf(as.vector(labor),lag.max =60)
+```
+```{r}
+pacf(as.vector(labor),lag.max = 36)
+```
+```{r}
+
+```
+```{r}
+plot(diff(labor),ylab='First Difference of Percent',xlab='Time')
+```
+```{r}
+acf(as.vector(diff(labor)),lag.max=36)
+```
+```{r}
+plot(diff(diff(labor),lag=12),xlab='Time',ylab='First and Seasonal Difference of Percent')
+```
+```{r}
+acf(as.vector(diff(diff(labor),lag=12)),lag.max=36,ci.type='ma')
+```
+```{r}
+m1.labor=arima(labor,order=c(1,2,2),seasonal=list(order=c(0,0,1),period=12))
+m1.labor
+```
+```{r}
+summary(m1.labor)
+```
+```{r}
+
+plot(window(rstandard(m1.labor),start=c(2010,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+```
+```{r}
+acf(as.vector(window(rstandard(m1.labor),start=c(2010,1))),lag.max=36)
+```
+```{r}
+hist(window(rstandard(m1.labor),start=c(2010,1)),xlab='Standardized Residuals')
+```
+```{r}
+qqnorm(window(rstandard(m1.labor),start=c(2010,1)))
+qqline(window(rstandard(m1.labor),start=c(2010,1)))
+```
+```{r}
+plot(m1.labor,n1=c(2018,1),n.ahead=24,xlab='Year',type='o', ylab='Percent',col='blue')
+```
+

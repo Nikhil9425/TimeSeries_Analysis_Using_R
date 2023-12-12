@@ -1,0 +1,188 @@
+---
+title: "Untitled"
+author: "ME"
+date: "4/8/2022"
+output: pdf_document
+---
+```{r}
+library(tseries)
+library(zoo)
+library(TSA)
+library(MASS)
+library(forecast)
+```
+
+```{r}
+data<-read.csv('C:\\Users\\HP\\Documents\\TS project\\NFLX.csv')
+head(data)
+```
+
+```{r}
+data$Date<-as.Date(data$Date,format = '%Y-%m-%d')
+head(date)
+```
+```{r}
+head(data)
+```
+```{r}
+data_mean<-aggregate(data$Adj.Close, list(data$Date), mean)
+data_mean
+```
+
+
+```{r}
+netflix<-read.zoo(data_mean, format='%Y-%m-%d')
+```
+
+```{r}
+plot(netflix,col='blue',type='l',xlab='Year',ylab = " adj close price", main="Plot of 2017-2022 daily netflix stock prices")
+```
+```{r}
+par(mfrow=c(1,2))
+acf(coredata(netflix), main="")
+pacf(coredata(netflix),main="")
+```
+
+```{r}
+netflix_log=log(netflix)
+netflix_log_num=coredata(netflix_log)
+```
+```{r}
+plot(netflix_log,xlab = 'Year',ylab =" adj close price")
+```
+```{r}
+netflix_diff<-diff(log(netflix))
+netflix_diff_num<-coredata(netflix_diff)
+```
+
+```{r}
+plot(diff(log(netflix)),xlab='Year',ylab =" adj close price", main="Differenced Log plot of 2017-2022 daily netflix stock prices")
+```
+
+
+
+
+```{r}
+par(mfrow=c(1,2))
+acf(netflix_diff_num,main="")
+pacf(netflix_diff_num, main="")
+```
+```{r}
+par(mfrow=c(1,2))
+acf(abs(netflix_diff_num),main="")
+pacf(abs(netflix_diff_num), main="")
+```
+```{r}
+par(mfrow=c(1,2))
+acf(netflix_diff_num^2,main="")
+pacf(netflix_diff_num^2, main="")
+```
+```{r}
+McLeod.Li.test(y=netflix_diff_num)
+```
+
+
+
+```{r}
+adf.test(netflix_log,k=0)#original
+```
+```{r}
+adf.test(netflix_diff,k=0)
+```
+
+
+
+```{r}
+qqnorm(netflix_diff)
+qqline(netflix_diff)
+```
+
+
+```{r}
+eacf(abs(netflix_diff_num))
+```
+```{r}
+arima(netflix_log_num,order = c(5,1,5),method ='CSS')
+
+```
+```{r}
+arima(netflix_diff_num,order = c(5,1,5),method='ML')
+```
+
+
+
+
+```{r}
+series=arima(netflix_diff_num,order = c(5,1,5))
+summary(series)
+```
+
+
+
+
+
+
+
+
+```{r}
+plot(rstandard(series),ylab='Standardized residuals',type='l')
+abline(h=0)
+```
+```{r}
+qqnorm(residuals(series));
+qqline(residuals(series))
+```
+```{r}
+library(moments)
+skewness(residuals(series))
+kurtosis(residuals(series))
+```
+```{r}
+jarque.test(residuals(series))
+```
+```{r}
+hist(resid(series),main="Histogram of Residuals")
+
+```
+```{r}
+acf(residuals(series),na.action = na.omit)
+```
+
+
+
+```{r}
+tsdiag(series)
+```
+```{r}
+arima(netflix_log_num,order = c(1,1,1),method ='CSS')
+```
+```{r}
+arima(netflix_diff_num,order = c(1,1,1),method='ML')
+```
+
+```{r}
+series2=arima(netflix_diff_num,order = c(1,1,1))
+summary(series2)
+```
+```{r}
+plot(rstandard(series2),ylab='Standardized residuals',type='l')
+abline(h=0)
+```
+```{r}
+qqnorm(residuals(series2));
+qqline(residuals(series2))
+```
+```{r}
+hist(resid(series2),main="Histogram of Residuals")
+```
+```{r}
+acf(residuals(series2),na.action = na.omit)
+```
+```{r}
+tsdiag(series2)
+```
+
+```{r}
+pred<-forecast(series,h=100)
+plot(pred)
+```
